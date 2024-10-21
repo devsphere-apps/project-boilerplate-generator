@@ -232,11 +232,83 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #ffffff;
+  min-height: 100vh;
 }
 
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
+}
+
+.App {
+  text-align: center;
+  padding: 2rem;
+}
+
+.main-content {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.title {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.subtitle {
+  font-size: 1.5rem;
+  margin-bottom: 2rem;
+  opacity: 0.8;
+}
+
+.feature-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 2rem;
+  margin-bottom: 2rem;
+}
+
+.feature-item {
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 1.5rem;
+  transition: transform 0.3s ease-in-out;
+}
+
+.feature-item:hover {
+  transform: translateY(-5px);
+}
+
+.feature-item h2 {
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.feature-item p {
+  font-size: 1rem;
+  opacity: 0.8;
+}
+
+.cta-button {
+  background-color: #4CAF50;
+  border: none;
+  color: white;
+  padding: 15px 32px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  margin: 4px 2px;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background-color 0.3s ease-in-out;
+}
+
+.cta-button:hover {
+  background-color: #45a049;
 }
 `;
     fs.writeFileSync(path.join(rootDir, 'src', 'index.css'), indexCssContent);
@@ -264,7 +336,29 @@ function App() {
   return (
     <div className="App">
       <Header />
-      <h1>Welcome to React with TypeScript</h1>
+      <main className="main-content">
+        <h1 className="title">Welcome to React with TypeScript</h1>
+        <p className="subtitle">Get ready for an amazing development experience!</p>
+        <div className="feature-grid">
+          <div className="feature-item">
+            <h2>React</h2>
+            <p>Build efficient and interactive UIs</p>
+          </div>
+          <div className="feature-item">
+            <h2>TypeScript</h2>
+            <p>Enhance your code with static typing</p>
+          </div>
+          <div className="feature-item">
+            <h2>Modern</h2>
+            <p>Use the latest web technologies</p>
+          </div>
+          <div className="feature-item">
+            <h2>Scalable</h2>
+            <p>Grow your app with a solid foundation</p>
+          </div>
+        </div>
+        <button className="cta-button">Get Started</button>
+      </main>
     </div>
   );
 }

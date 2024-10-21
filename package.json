@@ -2,8 +2,8 @@
   "name": "boilerplate-code-generator",
   "displayName": "Boilerplate Project Setup",
   "description": "VSCode Extension to generate boilerplate code for Web, Mobile, and Backend projects",
-  "version": "0.0.8",
-  "publisher": "mateen",
+  "version": "0.0.9",
+  "publisher": "Mateen",
   "repository": {
     "type": "git",
     "url": "https://github.com/devsphere-apps/project-boilerplate-generator"

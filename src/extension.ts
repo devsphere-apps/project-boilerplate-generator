@@ -6,16 +6,30 @@ import { generateReactBoilerplate } from './commands/generateReactBoilerplate';
 // This method is called when the extension is activated
 export function activate(context: vscode.ExtensionContext) {
     const startProjectSetup = vscode.commands.registerCommand('extension.startProjectSetup', async () => {
+        // For now, we'll only use Web (React) option
+        const projectType = 'Web (React)';
+        
+        // Commented out for future use
+        // const projectType = 'Web (React/Next)';
+
+        // Commented out for future use
+        /*
         const projectType = await vscode.window.showQuickPick(
-            ['Web (React/Next)', 'Mobile (React-Native)', 'Backend (Node/Express)'],
+            ['Web (React)', 'Web (React/Next)', 'Mobile (React-Native)', 'Backend (Node/Express)'],
             { placeHolder: 'Select your project type' }
         );
 
         if (!projectType) { return; }
+        */
 
         switch (projectType) {
-            case 'Web (React/Next)':
+            case 'Web (React)':
                 await setupWebProject();
+                break;
+            // Commented out for future use
+            /*
+            case 'Web (React/Next)':
+                await setupWebProject(true);
                 break;
             case 'Mobile (React-Native)':
                 await setupMobileProject();
@@ -25,14 +39,15 @@ export function activate(context: vscode.ExtensionContext) {
                 break;
             default:
                 vscode.window.showErrorMessage('Invalid project type selected');
+            */
         }
     });
 
     context.subscriptions.push(startProjectSetup);
 }
 
-// Function to set up a Web project (React/Next.js)
-async function setupWebProject() {
+// Function to set up a Web project (React)
+async function setupWebProject(isNext: boolean = false) {
     await generateReactBoilerplate();
 }
 

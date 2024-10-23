@@ -57,18 +57,16 @@ export const generateReactBoilerplate = async () => {
   const packageJsonContent = `
 {
   "name": "${frameworkChoice?.toLowerCase()}-boilerplate",
-  "version": "1.0.0",
-  "description": "A ${frameworkChoice} boilerplate with ${stateManagementChoice} and ${authChoice}",
-  "license": "MIT",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
   "scripts": {
-    "dev": "${frameworkChoice === 'React' ? 'react-scripts start' : '// next dev'}",
-    "build": "${frameworkChoice === 'React' ? 'react-scripts build' : '// next build'}",
-    "start": "${frameworkChoice === 'React' ? 'react-scripts start' : '// next start'}",
-    "lint": "eslint .",
-    "format": "prettier --write ."
+    "dev": "vite",
+    "build": "vite build",
+    "lint": "eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "preview": "vite preview"
   },
   "dependencies": {
-    "${frameworkChoice === 'React' ? 'react-scripts' : '// next'}": "latest",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     ${stateManagementChoice === 'Redux' ? `
@@ -79,44 +77,107 @@ export const generateReactBoilerplate = async () => {
     "mobx-react-lite": "^3.4.3",` : ''}
     ${authChoice === 'JWT' ? '"jsonwebtoken": "^9.0.0",' : ''}
     ${authChoice === 'OAuth' ? '"next-auth": "^4.22.1",' : ''}
-    ${stylingChoice === 'TailwindCSS' ? '"tailwindcss": "^3.3.2",' : ''}
     ${stylingChoice === 'Styled-components' ? '"styled-components": "^5.3.10",' : ''}
-    ${stylingChoice === 'Sass' ? '"sass": "^1.62.1",' : ''}
-    ${stylingChoice === 'Less' ? '"less": "^4.1.3",' : ''}
     "axios": "^1.4.0"
   },
   "devDependencies": {
-    ${languageChoice === 'TypeScript' ? `
-    "typescript": "^5.0.4",
-    "@types/react": "^18.2.0",
-    "@types/react-dom": "^18.2.0",
-    ${stateManagementChoice === 'Redux' ? '"@types/react-redux": "^7.1.25",' : ''}` : ''}
-    "eslint": "^8.40.0",
-    "eslint-config-prettier": "^8.8.0",
-    "eslint-plugin-react": "^7.32.2",
-    ${languageChoice === 'TypeScript' ? `
-    "@typescript-eslint/eslint-plugin": "^5.59.6",
-    "@typescript-eslint/parser": "^5.59.6",` : ''}
-    ${languageChoice === 'JavaScript' ? '"@babel/eslint-parser": "^7.21.8",' : ''}
-    "prettier": "^2.8.8",
-    "@babel/plugin-proposal-private-property-in-object": "^7.21.11"
-  },
-  ${frameworkChoice === 'React' ? `
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
-  }` : ''}
+    "@types/react": "^18.2.14",
+    "@types/react-dom": "^18.2.6",
+    "@typescript-eslint/eslint-plugin": "^5.61.0",
+    "@typescript-eslint/parser": "^5.61.0",
+    "@vitejs/plugin-react": "^4.0.1",
+    "eslint": "^8.44.0",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "eslint-plugin-react-refresh": "^0.4.1",
+    "typescript": "^5.0.2",
+    "vite": "^4.4.0"
+    ${stylingChoice === 'TailwindCSS' ? ',"autoprefixer": "^10.4.14","postcss": "^8.4.25","tailwindcss": "^3.3.2"' : ''}
+    ${stylingChoice === 'Sass' ? ',"sass": "^1.63.6"' : ''}
+    ${stylingChoice === 'Less' ? ',"less": "^4.1.3"' : ''}
+  }
 }
 `;
   fs.writeFileSync(path.join(rootDir, 'package.json'), packageJsonContent);
+
+  const viteConfigContent = `
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+
+// https://vitejs.dev/config/
+export default defineConfig({
+  plugins: [react()],
+})
+`;
+
+  fs.writeFileSync(path.join(rootDir, 'vite.config.ts'), viteConfigContent);
+
+  const tsconfigContent = `
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "useDefineForClassFields": true,
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "skipLibCheck": true,
+
+    /* Bundler mode */
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "jsx": "react-jsx",
+
+    /* Linting */
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true
+  },
+  "include": ["src"],
+  "references": [{ "path": "./tsconfig.node.json" }]
+}
+`;
+
+  fs.writeFileSync(path.join(rootDir, 'tsconfig.json'), tsconfigContent);
+
+  const tsconfigNodeContent = `
+{
+  "compilerOptions": {
+    "composite": true,
+    "skipLibCheck": true,
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "allowSyntheticDefaultImports": true
+  },
+  "include": ["vite.config.ts"]
+}
+`;
+
+  fs.writeFileSync(path.join(rootDir, 'tsconfig.node.json'), tsconfigNodeContent);
+
+  const eslintrcContent = `
+module.exports = {
+  root: true,
+  env: { browser: true, es2020: true },
+  extends: [
+    'eslint:recommended',
+    'plugin:@typescript-eslint/recommended',
+    'plugin:react-hooks/recommended',
+  ],
+  ignorePatterns: ['dist', '.eslintrc.cjs'],
+  parser: '@typescript-eslint/parser',
+  plugins: ['react-refresh'],
+  rules: {
+    'react-refresh/only-export-components': [
+      'warn',
+      { allowConstantExport: true },
+    ],
+  },
+}
+`;
+
+  fs.writeFileSync(path.join(rootDir, '.eslintrc.cjs'), eslintrcContent);
 
   const gitignoreContent = `
 # dependencies
@@ -174,46 +235,6 @@ REACT_APP_API_URL=http://localhost:3000/api
 `;
   fs.writeFileSync(path.join(rootDir, '.env'), envContent);
 
-  const eslintContent = `
-module.exports = {
-  extends: [
-    'eslint:recommended',
-    'plugin:react/recommended',
-    ${languageChoice === 'TypeScript' ? "'plugin:@typescript-eslint/recommended'," : ''}
-    'prettier'
-  ],
-  parser: ${languageChoice === 'TypeScript' ? "'@typescript-eslint/parser'" : "'@babel/eslint-parser'"},
-  plugins: ['react'${languageChoice === 'TypeScript' ? ", '@typescript-eslint'" : ''}],
-  parserOptions: {
-    ecmaVersion: 2021,
-    sourceType: 'module',
-    ecmaFeatures: {
-      jsx: true
-    }
-  },
-  rules: {
-    // Add custom rules here
-  },
-  settings: {
-    react: {
-      version: 'detect'
-    }
-  }
-};
-`;
-  fs.writeFileSync(path.join(rootDir, '.eslintrc.js'), eslintContent);
-
-  const prettierContent = `
-{
-  "semi": true,
-  "trailingComma": "all",
-  "singleQuote": true,
-  "printWidth": 100,
-  "tabWidth": 2
-}
-`;
-  fs.writeFileSync(path.join(rootDir, '.prettierrc'), prettierContent);
-
   const componentTemplate = `
 import React from 'react';
 
@@ -251,20 +272,7 @@ code {
 `;
     fs.writeFileSync(path.join(rootDir, 'src', 'index.css'), indexCssContent);
 
-    const indexTsxContent = `
-import React from 'react';
-import ReactDOM from 'react-dom/client';
-import './index.css';
-import App from './App';
-
-const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement);
-root.render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>
-);
-`;
-    fs.writeFileSync(path.join(rootDir, 'src', 'index.tsx'), indexTsxContent);
+    // Remove the creation of index.tsx
 
     const appTsxContent = `
 import React from 'react';
@@ -407,9 +415,10 @@ export default App;
     // Generate Tailwind config file
     const tailwindConfigContent = `
 /** @type {import('tailwindcss').Config} */
-module.exports = {
+export default {
   content: [
-    "./src/**/*.{js,jsx,ts,tsx}",
+    "./index.html",
+    "./src/**/*.{js,ts,jsx,tsx}",
   ],
   theme: {
     extend: {},
@@ -420,15 +429,15 @@ module.exports = {
     fs.writeFileSync(path.join(rootDir, 'tailwind.config.js'), tailwindConfigContent);
 
     // Create PostCSS config file
-    const postCssConfigContent = `
-module.exports = {
+    const postcssConfigContent = `
+export default {
   plugins: {
     tailwindcss: {},
     autoprefixer: {},
   },
 }
 `;
-    fs.writeFileSync(path.join(rootDir, 'postcss.config.js'), postCssConfigContent);
+    fs.writeFileSync(path.join(rootDir, 'postcss.config.js'), postcssConfigContent);
 
     // Update index.css with Tailwind directives
     const indexCssContent = `
@@ -527,31 +536,7 @@ export const useAppSelector: TypedUseSelectorHook<RootState> = useSelector;
 `;
     fs.writeFileSync(path.join(rootDir, 'src', 'redux', 'hooks', 'hooks.ts'), hooksContent);
 
-    // Update App.tsx to use Redux
-    const appTsxContent = `
-import React from 'react';
-import { Provider } from 'react-redux';
-import { store } from './redux/store';
-import Counter from './components/Counter';
-
-function App() {
-  return (
-    <Provider store={store}>
-      <div className="App">
-        <header className="App-header">
-          <h1>Welcome to React with Redux Toolkit</h1>
-          <Counter />
-        </header>
-      </div>
-    </Provider>
-  );
-}
-
-export default App;
-`;
-    fs.writeFileSync(path.join(rootDir, 'src', 'App.tsx'), appTsxContent);
-
-    // Create Counter component
+    // Create Counter component with Tailwind CSS styles
     const counterComponentContent = `
 import React from 'react';
 import { useAppSelector, useAppDispatch } from '../redux/hooks/hooks';
@@ -562,21 +547,26 @@ export function Counter() {
   const dispatch = useAppDispatch();
 
   return (
-    <div>
-      <div>
-        <button
-          aria-label="Increment value"
-          onClick={() => dispatch(increment())}
-        >
-          Increment
-        </button>
-        <span>{count}</span>
-        <button
-          aria-label="Decrement value"
-          onClick={() => dispatch(decrement())}
-        >
-          Decrement
-        </button>
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-r from-blue-500 to-purple-600">
+      <div className="bg-white p-8 rounded-lg shadow-2xl transform hover:scale-105 transition-transform duration-300">
+        <h2 className="text-4xl font-bold mb-6 text-center text-gray-800">Counter</h2>
+        <div className="flex items-center justify-center space-x-4">
+          <button
+            className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-full shadow-md transition-colors duration-300"
+            aria-label="Decrement value"
+            onClick={() => dispatch(decrement())}
+          >
+            -
+          </button>
+          <span className="text-5xl font-bold text-gray-700">{count}</span>
+          <button
+            className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-full shadow-md transition-colors duration-300"
+            aria-label="Increment value"
+            onClick={() => dispatch(increment())}
+          >
+            +
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -585,30 +575,60 @@ export function Counter() {
 export default Counter;
 `;
     fs.writeFileSync(path.join(rootDir, 'src', 'components', 'Counter.tsx'), counterComponentContent);
+
+    // Update App.tsx to use the styled Counter
+    const appTsxContent = `
+import React from 'react';
+import { Provider } from 'react-redux';
+import { store } from './redux/store';
+import Counter from './components/Counter';
+
+function App() {
+  return (
+    <Provider store={store}>
+      <Counter />
+    </Provider>
+  );
+}
+
+export default App;
+`;
+    fs.writeFileSync(path.join(rootDir, 'src', 'App.tsx'), appTsxContent);
   }
 
-  const tsconfigContent = `
-{
-  "compilerOptions": {
-    "target": "es5",
-    "lib": ["dom", "dom.iterable", "esnext"],
-    "allowJs": true,
-    "skipLibCheck": true,
-    "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true,
-    "strict": true,
-    "forceConsistentCasingInFileNames": true,
-    "noFallthroughCasesInSwitch": true,
-    "module": "esnext",
-    "moduleResolution": "node",
-    "resolveJsonModule": true,
-    "isolatedModules": true,
-    "noEmit": true,
-    "jsx": "react-jsx",
-    "baseUrl": "src"
-  },
-  "include": ["src"]
-}
+  // Create main.tsx for Vite (this is the only entry point we need)
+  const mainTsxContent = `
+import React from 'react'
+import ReactDOM from 'react-dom/client'
+import App from './App'
+import './index.css'
+${stateManagementChoice === 'Redux' ? "import { Provider } from 'react-redux'\nimport { store } from './redux/store'" : ''}
+
+ReactDOM.createRoot(document.getElementById('root')!).render(
+  <React.StrictMode>
+    ${stateManagementChoice === 'Redux' ? '<Provider store={store}>' : ''}
+    <App />
+    ${stateManagementChoice === 'Redux' ? '</Provider>' : ''}
+  </React.StrictMode>,
+)
 `;
-  fs.writeFileSync(path.join(rootDir, 'tsconfig.json'), tsconfigContent);
+  fs.writeFileSync(path.join(rootDir, 'src', 'main.tsx'), mainTsxContent);
+
+  // Create index.html for Vite (update the script src to main.tsx)
+  const indexHtmlContent = `
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vite + React + TS</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
+`;
+  fs.writeFileSync(path.join(rootDir, 'index.html'), indexHtmlContent);
 };

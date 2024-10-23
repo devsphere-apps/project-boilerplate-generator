@@ -2,7 +2,7 @@
   "name": "boilerplate-code-generator",
   "displayName": "Boilerplate Project Setup",
   "description": "VSCode Extension to generate boilerplate code for Web, Mobile, and Backend projects",
-  "version": "0.0.9",
+  "version": "0.0.12",
   "publisher": "Mateen",
   "repository": {
     "type": "git",
@@ -41,7 +41,8 @@
     "watch": "tsc -w -p ./",
     "pretest": "npm run compile && npm run lint",
     "lint": "eslint src --ext ts",
-    "test": "node ./out/test/runTest.js"
+    "test": "node ./out/test/runTest.js",
+    "gen-ext": "vsce package"
   },
   "devDependencies": {
     "@types/node": "^14.14.31",

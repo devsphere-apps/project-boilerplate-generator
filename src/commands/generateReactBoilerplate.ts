@@ -71,9 +71,12 @@ export const generateReactBoilerplate = async () => {
     "${frameworkChoice === 'React' ? 'react-scripts' : '// next'}": "latest",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    ${stateManagementChoice === 'Redux' ? '"@reduxjs/toolkit": "^1.9.5",' : ''}
-    ${stateManagementChoice === 'MobX' ? '"mobx": "^6.9.0",' : ''}
-    ${stateManagementChoice === 'MobX' ? '"mobx-react-lite": "^3.4.3",' : ''}
+    ${stateManagementChoice === 'Redux' ? `
+    "@reduxjs/toolkit": "^1.9.5",
+    "react-redux": "^8.1.1",` : ''}
+    ${stateManagementChoice === 'MobX' ? `
+    "mobx": "^6.9.0",
+    "mobx-react-lite": "^3.4.3",` : ''}
     ${authChoice === 'JWT' ? '"jsonwebtoken": "^9.0.0",' : ''}
     ${authChoice === 'OAuth' ? '"next-auth": "^4.22.1",' : ''}
     ${stylingChoice === 'TailwindCSS' ? '"tailwindcss": "^3.3.2",' : ''}
@@ -83,16 +86,20 @@ export const generateReactBoilerplate = async () => {
     "axios": "^1.4.0"
   },
   "devDependencies": {
-    ${languageChoice === 'TypeScript' ? '"typescript": "^5.0.4",' : ''}
+    ${languageChoice === 'TypeScript' ? `
+    "typescript": "^5.0.4",
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0",
+    ${stateManagementChoice === 'Redux' ? '"@types/react-redux": "^7.1.25",' : ''}` : ''}
     "eslint": "^8.40.0",
     "eslint-config-prettier": "^8.8.0",
     "eslint-plugin-react": "^7.32.2",
-    ${languageChoice === 'TypeScript' ? '"@typescript-eslint/eslint-plugin": "^5.59.6",' : ''}
-    ${languageChoice === 'TypeScript' ? '"@typescript-eslint/parser": "^5.59.6",' : ''}
+    ${languageChoice === 'TypeScript' ? `
+    "@typescript-eslint/eslint-plugin": "^5.59.6",
+    "@typescript-eslint/parser": "^5.59.6",` : ''}
     ${languageChoice === 'JavaScript' ? '"@babel/eslint-parser": "^7.21.8",' : ''}
     "prettier": "^2.8.8",
-    "@types/react": "^18.2.0",
-    "@types/react-dom": "^18.2.0"
+    "@babel/plugin-proposal-private-property-in-object": "^7.21.11"
   },
   ${frameworkChoice === 'React' ? `
   "browserslist": {
@@ -454,4 +461,154 @@ export default App;
 
     vscode.window.showInformationMessage('Tailwind CSS has been set up successfully!');
   }
+
+  if (stateManagementChoice === 'Redux' && languageChoice === 'TypeScript') {
+    // Create Redux directory structure
+    const reduxDirs = ['src/redux', 'src/redux/slices', 'src/redux/hooks'];
+    createDirs(reduxDirs);
+
+    // Create store.ts
+    const storeContent = `
+import { configureStore } from '@reduxjs/toolkit';
+import counterReducer from './slices/counterSlice';
+
+export const store = configureStore({
+  reducer: {
+    counter: counterReducer,
+  },
+});
+
+export type RootState = ReturnType<typeof store.getState>;
+export type AppDispatch = typeof store.dispatch;
+`;
+    fs.writeFileSync(path.join(rootDir, 'src', 'redux', 'store.ts'), storeContent);
+
+    // Create counterSlice.ts
+    const counterSliceContent = `
+import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+
+interface CounterState {
+  value: number;
+}
+
+const initialState: CounterState = {
+  value: 0,
+};
+
+export const counterSlice = createSlice({
+  name: 'counter',
+  initialState,
+  reducers: {
+    increment: (state) => {
+      state.value += 1;
+    },
+    decrement: (state) => {
+      state.value -= 1;
+    },
+    incrementByAmount: (state, action: PayloadAction<number>) => {
+      state.value += action.payload;
+    },
+  },
+});
+
+export const { increment, decrement, incrementByAmount } = counterSlice.actions;
+
+export default counterSlice.reducer;
+`;
+    fs.writeFileSync(path.join(rootDir, 'src', 'redux', 'slices', 'counterSlice.ts'), counterSliceContent);
+
+    // Create hooks.ts
+    const hooksContent = `
+import { TypedUseSelectorHook, useDispatch, useSelector } from 'react-redux';
+import type { RootState, AppDispatch } from '../store';
+
+export const useAppDispatch = () => useDispatch<AppDispatch>();
+export const useAppSelector: TypedUseSelectorHook<RootState> = useSelector;
+`;
+    fs.writeFileSync(path.join(rootDir, 'src', 'redux', 'hooks', 'hooks.ts'), hooksContent);
+
+    // Update App.tsx to use Redux
+    const appTsxContent = `
+import React from 'react';
+import { Provider } from 'react-redux';
+import { store } from './redux/store';
+import Counter from './components/Counter';
+
+function App() {
+  return (
+    <Provider store={store}>
+      <div className="App">
+        <header className="App-header">
+          <h1>Welcome to React with Redux Toolkit</h1>
+          <Counter />
+        </header>
+      </div>
+    </Provider>
+  );
+}
+
+export default App;
+`;
+    fs.writeFileSync(path.join(rootDir, 'src', 'App.tsx'), appTsxContent);
+
+    // Create Counter component
+    const counterComponentContent = `
+import React from 'react';
+import { useAppSelector, useAppDispatch } from '../redux/hooks/hooks';
+import { decrement, increment } from '../redux/slices/counterSlice';
+
+export function Counter() {
+  const count = useAppSelector((state) => state.counter.value);
+  const dispatch = useAppDispatch();
+
+  return (
+    <div>
+      <div>
+        <button
+          aria-label="Increment value"
+          onClick={() => dispatch(increment())}
+        >
+          Increment
+        </button>
+        <span>{count}</span>
+        <button
+          aria-label="Decrement value"
+          onClick={() => dispatch(decrement())}
+        >
+          Decrement
+        </button>
+      </div>
+    </div>
+  );
+}
+
+export default Counter;
+`;
+    fs.writeFileSync(path.join(rootDir, 'src', 'components', 'Counter.tsx'), counterComponentContent);
+  }
+
+  const tsconfigContent = `
+{
+  "compilerOptions": {
+    "target": "es5",
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+    "noFallthroughCasesInSwitch": true,
+    "module": "esnext",
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "jsx": "react-jsx",
+    "baseUrl": "src"
+  },
+  "include": ["src"]
+}
+`;
+  fs.writeFileSync(path.join(rootDir, 'tsconfig.json'), tsconfigContent);
 };

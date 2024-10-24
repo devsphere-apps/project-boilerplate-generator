@@ -591,8 +591,34 @@ export default App;
   }
 
   if (backendServiceChoice === 'Firebase') {
-    // TODO: Implement Firebase setup
-    vscode.window.showInformationMessage('Firebase setup will be implemented in a future update.');
+    // Create utils directory if it doesn't exist
+    const utilsDir = path.join(rootDir, 'src', 'utils');
+    if (!fs.existsSync(utilsDir)) {
+      fs.mkdirSync(utilsDir, { recursive: true });
+    }
+
+    // Create firebaseConfig.js with placeholder text
+    const firebaseConfigContent = `
+import { initializeApp } from "firebase/app";
+
+// TODO: Replace the following with your app's Firebase project configuration
+const firebaseConfig = {
+  apiKey: "YOUR_API_KEY",
+  authDomain: "YOUR_AUTH_DOMAIN",
+  projectId: "YOUR_PROJECT_ID",
+  storageBucket: "YOUR_STORAGE_BUCKET",
+  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+  appId: "YOUR_APP_ID"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+
+export default app;
+`;
+    fs.writeFileSync(path.join(utilsDir, 'firebaseConfig.js'), firebaseConfigContent);
+
+    vscode.window.showInformationMessage('Firebase configuration file created in src/utils/firebaseConfig.js');
   }
 
   // Create main.tsx for Vite (this is the only entry point we need)

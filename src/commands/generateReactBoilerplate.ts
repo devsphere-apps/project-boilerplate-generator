@@ -4,30 +4,32 @@ import * as vscode from 'vscode';
 import * as childProcess from 'child_process';
 
 export const generateReactBoilerplate = async () => {
-  // Commented out for future use
-  // const frameworkChoice = await vscode.window.showQuickPick(['React', 'Next.js'], {
-  //   placeHolder: 'Choose Framework',
-  // });
   const frameworkChoice = 'React'; // For now, we're only using React
 
   const languageChoice = await vscode.window.showQuickPick(['JavaScript', 'TypeScript'], {
     placeHolder: 'Choose Language',
   });
 
-  const stateManagementChoice = await vscode.window.showQuickPick(['None', 'Redux', 'MobX'], {
+  const stateManagementChoice = await vscode.window.showQuickPick(['None', 'Redux'], {
     placeHolder: 'Choose State Management',
   });
 
-  const authChoice = await vscode.window.showQuickPick(['None', 'JWT', 'OAuth'], {
-    placeHolder: 'Choose Authentication Method',
+  const backendServiceChoice = await vscode.window.showQuickPick(['None', 'Firebase'], {
+    placeHolder: 'Choose Backend Service',
   });
 
-  const stylingChoice = await vscode.window.showQuickPick(
-    ['CSS Modules', 'TailwindCSS', 'Styled-components', 'Sass', 'Less'],
-    {
-      placeHolder: 'Choose Styling Solution',
-    }
-  );
+  const stylingChoice = await vscode.window.showQuickPick(['None', 'TailwindCSS'], {
+    placeHolder: 'Choose Styling Solution',
+  });
+
+  const createBoilerplate = await vscode.window.showQuickPick(['Yes', 'No'], {
+    placeHolder: 'Create boilerplate now?',
+  });
+
+  if (createBoilerplate !== 'Yes') {
+    vscode.window.showInformationMessage('Boilerplate creation cancelled.');
+    return;
+  }
 
   const rootDir = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
 
@@ -46,11 +48,6 @@ export const generateReactBoilerplate = async () => {
   };
 
   const directories = ['src', 'src/components', 'public', 'src/styles'];
-
-  // Commented out for future use
-  // if (frameworkChoice === 'Next.js') {
-  //   directories.push('pages', 'pages/api');
-  // }
 
   createDirs(directories);
 
@@ -75,9 +72,8 @@ export const generateReactBoilerplate = async () => {
     ${stateManagementChoice === 'MobX' ? `
     "mobx": "^6.9.0",
     "mobx-react-lite": "^3.4.3",` : ''}
-    ${authChoice === 'JWT' ? '"jsonwebtoken": "^9.0.0",' : ''}
-    ${authChoice === 'OAuth' ? '"next-auth": "^4.22.1",' : ''}
-    ${stylingChoice === 'Styled-components' ? '"styled-components": "^5.3.10",' : ''}
+    ${backendServiceChoice === 'Firebase' ? '"firebase": "^9.15.0",' : ''}
+    ${stylingChoice === 'TailwindCSS' ? '"tailwindcss": "^3.3.2",' : ''}
     "axios": "^1.4.0"
   },
   "devDependencies": {
@@ -92,8 +88,6 @@ export const generateReactBoilerplate = async () => {
     "typescript": "^5.0.2",
     "vite": "^4.4.0"
     ${stylingChoice === 'TailwindCSS' ? ',"autoprefixer": "^10.4.14","postcss": "^8.4.25","tailwindcss": "^3.3.2"' : ''}
-    ${stylingChoice === 'Sass' ? ',"sass": "^1.63.6"' : ''}
-    ${stylingChoice === 'Less' ? ',"less": "^4.1.3"' : ''}
   }
 }
 `;
@@ -596,6 +590,11 @@ export default App;
     fs.writeFileSync(path.join(rootDir, 'src', 'App.tsx'), appTsxContent);
   }
 
+  if (backendServiceChoice === 'Firebase') {
+    // TODO: Implement Firebase setup
+    vscode.window.showInformationMessage('Firebase setup will be implemented in a future update.');
+  }
+
   // Create main.tsx for Vite (this is the only entry point we need)
   const mainTsxContent = `
 import React from 'react'
@@ -631,4 +630,6 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
 </html>
 `;
   fs.writeFileSync(path.join(rootDir, 'index.html'), indexHtmlContent);
+
+  vscode.window.showInformationMessage('React boilerplate created successfully!');
 };
